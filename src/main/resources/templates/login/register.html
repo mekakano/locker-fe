@@ -1,0 +1,161 @@
+<!-- home.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Register</title>
+  </head>
+  <body>
+    <div th:insert="~{login/layout :: html}">
+      <div th:fragment="mainContent">
+        <div class="row justify-content-center">
+          <div class="col-md-offset-4 col-md-4 col-sm-offset-3 col-sm-6">
+            <div class="form-container">
+              <h3 class="title">Register Account</h3>
+              <form class="form-horizontal">
+                <div class="form-icon">
+                  <i class="fa fa-user-circle"></i>
+                </div>
+                <div class="form-group">
+                  <span class="input-icon"><i class="fa fa-user"></i></span>
+                  <input
+                    type="text"
+                    id="nama"
+                    class="form-control"
+                    placeholder="Nama"
+                  />
+                </div>
+                <div class="form-group">
+                  <span class="input-icon"><i class="fa fa-user"></i></span>
+                  <input
+                    type="email"
+                    id="email"
+                    class="form-control"
+                    placeholder="email"
+                  />
+                </div>
+                <div class="form-group">
+                  <span class="input-icon"><i class="fa fa-lock"></i></span>
+                  <input
+                    type="password"
+                    id="password"
+                    class="form-control"
+                    placeholder="Password"
+                  />
+                </div>
+                <div class="form-group">
+                  <span class="input-icon"><i class="fa fa-lock"></i></span>
+                  <input
+                    type="password"
+                    id="repeatPassword"
+                    class="form-control"
+                    placeholder="Repeat Password"
+                  />
+                </div>
+                <div class="form-group">
+                  <span class="input-icon"><i class="fa fa-user"></i></span>
+                  <input
+                    type="text"
+                    id="noKtp"
+                    class="form-control"
+                    placeholder="No KTP"
+                  />
+                </div>
+                <div class="form-group">
+                  <span class="input-icon"><i class="fa fa-user"></i></span>
+                  <input
+                    type="number"
+                    id="phoneNumber"
+                    class="form-control"
+                    placeholder="Phone Number"
+                  />
+                </div>
+                <h5 style="color: red" th:text="${notifRegister}"></h5>
+                <button type="button" class="btn signin" onclick="register()">
+                  Register
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function register() {
+        var nama = document.getElementById("nama").value;
+        var email = document.getElementById("email").value;
+        var password = document.getElementById("password").value;
+        var repeatPassword = document.getElementById("repeatPassword").value;
+        var noKtp = document.getElementById("noKtp").value;
+        var phoneNumber = document.getElementById("phoneNumber").value;
+
+        if (nama.trim() === "") {
+          alert("Name must not be empty");
+          return false;
+        }
+
+        if (!isValidEmail(email)) {
+          alert("Please enter a valid email address");
+          return false;
+        }
+
+        if (password.trim() === "") {
+          alert("Password must not be empty");
+          return false;
+        }
+
+        if (password !== repeatPassword) {
+          alert("Passwords do not match");
+          return false;
+        }
+
+        if (noKtp.length !== 16) {
+          alert("No KTP must be 16 characters long");
+          return false;
+        }
+
+        if (!isValidPhoneNumber(phoneNumber)) {
+          alert("Please enter a valid phone number");
+          return false;
+        }
+
+        // If all validations pass, you can submit the form
+        $.ajax({
+          type: "POST",
+          url: "/doRegister",
+          data: {
+            nama: nama,
+            email: email,
+            password: password,
+            no_ktp: noKtp,
+            phone_number: phoneNumber,
+          },
+          success: function (response) {
+            console.log("isi data woi " + response["message"]);
+            var message = response["message"];
+            if (response["statuscode"] == 0) {
+              // Optionally, redirect to another page
+              window.location.href = "/login";
+            } 
+            alert(message);
+          },
+          error: function (xhr, status, error) {
+            alert("Error: " + error);
+          },
+        });
+
+        return false;
+      }
+
+      function isValidEmail(email) {
+        var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+      }
+
+      function isValidPhoneNumber(phoneNumber) {
+        var regex = /^\d{10,12}$/; // Adjust the regex as needed for your specific format
+        return regex.test(phoneNumber);
+      }
+    </script>
+  </body>
+</html>

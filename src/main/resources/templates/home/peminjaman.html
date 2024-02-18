@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Locker</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5 mb-5 d-flex justify-content-center">
+      <div class="card px-1 py-4">
+        <div class="card-body">
+          <h6 class="information mt-4">Pilih Nomor Loker</h6>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <div class="input-group">
+                  <select
+                    class="form-select"
+                    aria-label="Default select example"
+                    id="selectLocker"
+                  >
+                    <option selected disabled>--PILIH--</option>
+                    <option value="1">One</option>
+                    <option value="2">Two</option>
+                    <option value="3">Three</option>
+                    <option value="4">Four</option>
+                    <option value="5">Five</option>
+                    <option value="6">Six</option>
+                    <option value="7">Seven</option>
+                    <option value="8">Eight</option>
+                    <option value="9">Nine</option>
+                    <option value="10">Ten</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex flex-column text-center px-5 mt-3 mb-3">
+            <button
+              type="button"
+              onclick="sendSelectedValues()"
+              class="btn btn-primary btn-block confirm-button"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container mt-5 mb-5 d-flex justify-content-center">
+      <table id="exampleTable" style="width: 100%">
+        <thead>
+          <tr>
+            <th>Nomor Locker</th>
+            <th>Tanggal Peminjaman</th>
+            <th>Tanggal Pengembalian</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Add more rows as needed -->
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">
+              Masukkan Password Locker
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="recipient-name" class="col-form-label"
+                  >password:</label
+                >
+                <input type="text" class="form-control" id="password_locker" />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              onclick="sendPassword()"
+              class="btn btn-primary"
+            >
+              Buka Locker
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <script
+      type="text/javascript"
+      charset="utf8"
+      src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"
+    ></script>
+    <script>
+      var nomorLockerTemp = "";
+      $(document).ready(function () {
+        //$("#selectLocker").select2();
+        showTable();
+        showAvailable();
+      });
+
+      function sendSelectedValues() {
+        var selectedValues = $("#selectLocker").val();
+        $.ajax({
+          type: "POST",
+          url: "/pilihLocker",
+          data: {
+            nomor_locker: selectedValues,
+          },
+          success: function (response) {
+            var statuscode = response["statuscode"];
+            var message = response["message"];
+            if (statuscode == 0) {
+              alert("Anda Berhasil Meminjam Locker");
+              showTable();
+              showAvailable();
+            } else {
+              alert(message);
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error(xhr.responseText); // Log the error message
+            // Handle the error
+          },
+        });
+      }
+
+      function showModal(nomorLocker) {
+        nomorLockerTemp = nomorLocker;
+        $("#exampleModal").modal("show");
+      }
+
+      function showAvailable() {
+        $.ajax({
+          type: "GET",
+          url: "/lihatAvailable",
+          success: function (response) {
+            console.log("isi data woi " + JSON.stringify(response));
+            console.log("isi data woi " + JSON.stringify(dataArr));
+            var dataArr = response["object"];
+            $("#selectLocker option:not(:first-child)").each(function () {
+              var optionValue = $(this).val();
+              for (var i = 0; i < dataArr.length; i++) {
+                if (optionValue === dataArr[i].nomor_locker) {
+                  $(this).prop("disabled", true);
+                  break; // Exit the loop once disabled
+                }
+              }
+            });
+          },
+          error: function (xhr, status, error) {
+            alert("Error: " + error);
+          },
+        });
+      }
+
+      function showTable() {
+        $.ajax({
+          type: "GET",
+          url: "/lihatData",
+          success: function (response) {
+            console.log("isi data woi " + JSON.stringify(response));
+            console.log("isi data woi " + JSON.stringify(dataArr));
+            var table = $("#exampleTable").DataTable();
+            table.clear().draw();
+            var dataArr = response["object"];
+            for (var i = 0; i < dataArr.length; i++) {
+              var dateTimeStringPeminjaman = dataArr[i].tanggal_peminjaman;
+              var datePartPeminjaman = dateTimeStringPeminjaman.substring(
+                0,
+                10
+              );
+
+              var dateTimeStringKembali = dataArr[i].tanggal_pengembalian;
+              var datePartKembali = dateTimeStringKembali.substring(0, 10);
+
+              var content = "";
+              if (dataArr[i].isopen) {
+                content +=
+                  '<button type="button" onclick="showModal(' +
+                  dataArr[i].nomor_locker +
+                  ')" class="btn btn-primary" disabled>Buka</button>';
+              } else {
+                content +=
+                  '<button type="button" onclick="showModal(' +
+                  dataArr[i].nomor_locker +
+                  ')" class="btn btn-primary">Buka</button>';
+              }
+
+              console.log(dataArr[i].nomor_locker);
+              table.row.add([
+                dataArr[i].nomor_locker,
+                datePartPeminjaman,
+                datePartKembali,
+                content,
+                // Add more columns as needed
+              ]);
+            }
+            table.draw();
+          },
+          error: function (xhr, status, error) {
+            alert("Error: " + error);
+          },
+        });
+      }
+
+      function sendPassword() {
+        var password_locker = document.getElementById("password_locker").value;
+
+        if (password_locker.trim() === "") {
+          alert("password must not be empty");
+          return false;
+        }
+
+        // If all validations pass, you can submit the form
+        $.ajax({
+          type: "POST",
+          url: "/validatePassword",
+          data: {
+            password_locker: password_locker,
+            nomor_locker: nomorLockerTemp,
+          },
+          success: function (response) {
+            console.log("isi data woi " + response["message"]);
+            var statuscode = response["statuscode"];
+            var message = response["message"];
+            if (statuscode == 0) {
+              alert("SILAHKAN MEMAKAI LOCKER");
+              showTable();
+            } else {
+              alert(message);
+            }
+          },
+          error: function (xhr, status, error) {
+            alert("Error: " + error);
+          },
+        });
+
+        return false;
+      }
+    </script>
+
+    <!-- Your other scripts here -->
+  </body>
+</html>
